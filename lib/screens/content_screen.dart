@@ -8,69 +8,32 @@ class ContentScreen extends StatefulWidget {
   State<ContentScreen> createState() => _ContentScreenState();
 }
 
-class _ContentScreenState extends State<ContentScreen>
-    with TickerProviderStateMixin {
-  final List<String> flowerImages = [
-    './assets/rose1.png',
-    './assets/tulip.png',
-    './assets/daisy.png',
-    './assets/lily.png',
-    './assets/sunflower.png',
-    './assets/orchid.png',
-    './assets/carnation.png',
-    './assets/rose2.png',
-    './assets/rose3.png',
-    './assets/rose4.png',
-    // ✅ THÊM HÌNH VÀO ĐÂY!
-  ];
+class _ContentScreenState extends State<ContentScreen> {
+  final List<String> flowerImages = List.generate(
+    30,
+    (i) => 'assets/ni/n${i + 1}.jpg', // ✅ bỏ ./ để Flutter nhận đúng asset
+  );
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.pink.shade50, Colors.purple.shade100, Colors.white],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          colors: [Colors.white, Colors.pink.shade100, Colors.purple.shade50],
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
         ),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            // 💖 TEXT CHÍNH GIỮA
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '💕 EM ƠI 20/10 VUI NHỈ 💕',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      foreground: Paint()
-                        ..shader = LinearGradient(
-                          colors: [Colors.pink.shade400, Colors.red.shade400],
-                        ).createShader(Rect.fromLTWH(0, 0, 300, 100)),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Chạm vào hoa để xem to hơn nha! 🌸',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.pink.shade300,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // 🌧️ MƯA HÌNH ẢNH - RANDOM + LOOP VÔ HẠN
-            ...List.generate(50, (index) {
-              return RainyFlowerLoop(
+            // 🌸 Ảnh bay ngẫu nhiên, xuất hiện xen kẽ
+            ...List.generate(30, (index) {
+              return BubbleFlower(
                 imagePath:
                     flowerImages[math.Random().nextInt(flowerImages.length)],
+                delay: index * 0.8,
                 index: index,
               );
             }),
@@ -81,116 +44,94 @@ class _ContentScreenState extends State<ContentScreen>
   }
 }
 
-// 🌸 MƯA HỒA LOOP VÔ HẠN - RANDOM TOÀN MÀN
-class RainyFlowerLoop extends StatefulWidget {
+// 🌸 Hiệu ứng hoa bay
+class BubbleFlower extends StatefulWidget {
   final String imagePath;
+  final double delay;
   final int index;
 
-  const RainyFlowerLoop({
+  const BubbleFlower({
     super.key,
     required this.imagePath,
+    required this.delay,
     required this.index,
   });
 
   @override
-  State<RainyFlowerLoop> createState() => _RainyFlowerLoopState();
+  State<BubbleFlower> createState() => _BubbleFlowerState();
 }
 
-class _RainyFlowerLoopState extends State<RainyFlowerLoop>
+class _BubbleFlowerState extends State<BubbleFlower>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _positionAnimation;
-  late Animation<double> _rotationAnimation;
-  late Animation<double> _fadeAnimation;
+  late double xPosition;
+  late double size;
+  final random = math.Random();
 
-  // ✅ RANDOM XỊN: MỖI HÌNH CÓ VỊ TRÍ RIÊNG
-  final random = math.Random(); // Random khác nhau mỗi lần
-  double get xPosition => random.nextDouble(); // ✅ RANDOM X TOÀN MÀN
-  double get size => 30 + random.nextDouble() * 50; // ✅ RANDOM SIZE
-  double get duration => 12.0 + random.nextDouble() * 12; // ✅ RANDOM TIME
-  bool get direction => random.nextBool(); // ✅ XOAY TRÁI/PHẢI
+  double get duration => 12 + random.nextDouble() * 8; // 12–20s
 
   @override
   void initState() {
     super.initState();
+    _randomizeBubble();
 
     _controller = AnimationController(
       duration: Duration(seconds: duration.toInt()),
       vsync: this,
     );
 
-    // ✅ LOOP VÔ HẠN
-    _positionAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
+    // Bắt đầu bay trễ ngẫu nhiên để không đồng loạt
+    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
+      if (mounted) _controller.forward();
+    });
 
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: math.pi * 2 * (direction ? 1 : -1),
-    ).animate(_positionAnimation);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _randomizeBubble();
+        _controller.forward(from: 0);
+      }
+    });
+  }
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _positionAnimation, curve: Interval(0.05, 0.95)),
-    );
-
-    // ✅ START LOOP NGAY + LẶP MÃI
-    _controller.repeat();
+  void _randomizeBubble() {
+    final width =
+        WidgetsBinding.instance.window.physicalSize.width /
+        WidgetsBinding.instance.window.devicePixelRatio;
+    xPosition = random.nextDouble() * width;
+    size = 25 + random.nextDouble() * 45;
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final height = MediaQuery.of(context).size.height;
 
     return AnimatedBuilder(
-      animation: _positionAnimation,
-      builder: (context, child) {
+      animation: _controller,
+      builder: (context, _) {
+        final progress = _controller.value;
+        final top = height - (progress * (height + 100));
+        final sway = math.sin(progress * math.pi * 2) * 20;
+        final opacity = progress < 0.1
+            ? progress * 10
+            : (progress > 0.9 ? (1 - progress) * 10 : 1.0);
+
         return Positioned(
-          // ✅ RANDOM X TOÀN MÀN HÌNH
-          left: xPosition * MediaQuery.of(context).size.width,
-          // ✅ TỪ TRÊN XUỐNG CHẬM
-          top: (_positionAnimation.value * (screenHeight + size)) - size,
-          child: Transform.rotate(
-            angle: _rotationAnimation.value,
-            child: Opacity(
-              opacity: _fadeAnimation.value,
-              child: GestureDetector(
-                onTap: () => _showFullScreen(context),
-                child: Hero(
-                  tag:
-                      '${widget.imagePath}_${widget.index}_${random.nextInt(1000)}',
-                  child: Container(
+          top: top,
+          left: xPosition + sway,
+          child: Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: GestureDetector(
+              onTap: () => _showFullImage(context),
+              child: Hero(
+                tag: '${widget.imagePath}_${widget.index}',
+                child: ClipOval(
+                  child: Image.network(
+                    widget.imagePath,
                     width: size,
                     height: size,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.pink.withOpacity(0.4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        widget.imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              colors: [Colors.pink, Colors.red],
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.favorite,
-                            color: Colors.white,
-                            size: size * 0.6,
-                          ),
-                        ),
-                      ),
-                    ),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.favorite, color: Colors.pinkAccent),
                   ),
                 ),
               ),
@@ -201,14 +142,14 @@ class _RainyFlowerLoopState extends State<RainyFlowerLoop>
     );
   }
 
-  void _showFullScreen(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => FullScreenFlower(
-        imagePath: widget.imagePath,
-        heroTag: '${widget.imagePath}_${widget.index}_${random.nextInt(1000)}',
-        size: size,
+  void _showFullImage(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (_, __, ___) => FullScreenImage(
+          imagePath: widget.imagePath,
+          heroTag: '${widget.imagePath}_${widget.index}',
+        ),
       ),
     );
   }
@@ -220,72 +161,40 @@ class _RainyFlowerLoopState extends State<RainyFlowerLoop>
   }
 }
 
-// 🖼️ FULL SCREEN
-class FullScreenFlower extends StatelessWidget {
+// 🖼️ Hiển thị hình full
+class FullScreenImage extends StatelessWidget {
   final String imagePath;
   final String heroTag;
-  final double size;
 
-  const FullScreenFlower({
+  const FullScreenImage({
     super.key,
     required this.imagePath,
     required this.heroTag,
-    required this.size,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: Colors.black.withOpacity(0.9),
       body: Stack(
         children: [
-          // Mưa nhỏ background
-          ...List.generate(20, (i) {
-            final random = math.Random(i);
-            return Positioned(
-              left: random.nextDouble() * MediaQuery.of(context).size.width,
-              top: random.nextDouble() * MediaQuery.of(context).size.height,
-              child: Icon(
-                Icons.favorite,
-                color: Colors.pink.withOpacity(0.4),
-                size: 8 + random.nextDouble() * 12,
-              ),
-            );
-          }),
           Center(
             child: Hero(
               tag: heroTag,
-              child: Container(
-                margin: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      // ignore: deprecated_member_use
-                      color: Colors.pink.withOpacity(0.6),
-                      blurRadius: 30,
-                      spreadRadius: 10,
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.favorite, color: Colors.white, size: 200),
-                  ),
-                ),
+              child: InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 3,
+                panEnabled: true,
+                child: Image.network(imagePath, fit: BoxFit.contain),
               ),
             ),
           ),
           Positioned(
-            top: 50,
+            top: 40,
             right: 20,
             child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 32),
               onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.close, color: Colors.white, size: 40),
             ),
           ),
         ],

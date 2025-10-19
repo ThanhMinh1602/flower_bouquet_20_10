@@ -9,10 +9,9 @@ class ContentScreen extends StatefulWidget {
 }
 
 class _ContentScreenState extends State<ContentScreen> {
-  final List<String> flowerImages = List.generate(
-    30,
-    (i) => 'assets/ni/n${i + 1}.jpg',
-  );
+  final List<String> flowerImages = [
+    'https://scontent.fdad1-4.fna.fbcdn.net/v/t39.30808-6/541092496_3787945468157954_3224403287258737462_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeF7khjIsYezTs4Eg8EXf1ZaSSek-VUJYNhJJ6T5VQlg2NPy9XA4Xh2NN7nSiClM34PlYexVwRBnIto-lDCwowDl&_nc_ohc=zG25vXMHwr8Q7kNvwHej2VU&_nc_oc=Adk3c8PUZDg2xbx1OGaFH7OrTVzTehbc_ZI-FQYV_Jzzgfrh4eUsBNHCjJPC3BUPqfY&_nc_zt=23&_nc_ht=scontent.fdad1-4.fna&_nc_gid=O0avZfWuUEk0iNntNIXJEQ&oh=00_AfeIQvwTWXFNQZICe2zwSv6pio8WEvXhSvpcMZoV7D2d2Q&oe=68FB1D6F',
+  ];
   final String sun = 'assets/sun.png';
 
   @override

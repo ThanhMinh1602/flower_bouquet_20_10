@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "585909437765",
+    "project_id": "quantum-talent-410009",
+    "storage_bucket": "quantum-talent-410009.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585909437765:android:b5c545e9348519efd16a2c",
+        "android_client_info": {
+          "package_name": "com.example.flower_bouquet_20_10"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQB64IP5GOV0QEIagsTnu-AuLN-QPu8xw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585909437765:android:245bd15d74dcac5ad16a2c",
+        "android_client_info": {
+          "package_name": "com.example.i_am_sorry"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQB64IP5GOV0QEIagsTnu-AuLN-QPu8xw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

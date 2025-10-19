@@ -13,6 +13,7 @@ class _ContentScreenState extends State<ContentScreen> {
     30,
     (i) => 'assets/ni/n${i + 1}.jpg',
   );
+  final String sun = 'assets/sun.png';
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +29,15 @@ class _ContentScreenState extends State<ContentScreen> {
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
+            // 🌞 Mặt trời nhỏ bay lên (1/4 tần suất so với hoa)
+            ...List.generate(8, (index) {
+              return BubbleSun(
+                imagePath: sun,
+                delay: index * 2.5,
+                index: index,
+              );
+            }),
+
             // 🌸 Hoa bay xen kẽ
             ...List.generate(25, (index) {
               return BubbleFlower(
@@ -38,7 +48,7 @@ class _ContentScreenState extends State<ContentScreen> {
               );
             }),
 
-            // 💧 Bọt biển nhỏ li ti bay ngẫu nhiên
+            // 💧 Bọt biển nhỏ li ti
             ...List.generate(50, (index) {
               return BubbleParticle(delay: index * 0.4);
             }),
@@ -49,7 +59,7 @@ class _ContentScreenState extends State<ContentScreen> {
   }
 }
 
-// 🌸 Hoa bay
+/// 🌸 Hoa bay nhẹ
 class BubbleFlower extends StatefulWidget {
   final String imagePath;
   final double delay;
@@ -85,7 +95,7 @@ class _BubbleFlowerState extends State<BubbleFlower>
       vsync: this,
     );
 
-    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
+    Future.delayed(Duration(milliseconds: (widget.delay * 800).toInt()), () {
       if (mounted) _controller.forward();
     });
 
@@ -112,7 +122,7 @@ class _BubbleFlowerState extends State<BubbleFlower>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        final progress = _controller.value;
+        final progress = Curves.linear.transform(_controller.value);
         final top = height - (progress * (height + 100));
         final sway = math.sin(progress * math.pi * 2) * 20;
         final opacity = progress < 0.1
@@ -163,7 +173,105 @@ class _BubbleFlowerState extends State<BubbleFlower>
   }
 }
 
-// 💧 Bọt biển nhỏ li ti
+/// 🌞 Mặt trời nhỏ bay lấp lánh
+class BubbleSun extends StatefulWidget {
+  final String imagePath;
+  final double delay;
+  final int index;
+
+  const BubbleSun({
+    super.key,
+    required this.imagePath,
+    required this.delay,
+    required this.index,
+  });
+
+  @override
+  State<BubbleSun> createState() => _BubbleSunState();
+}
+
+class _BubbleSunState extends State<BubbleSun>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late double xPosition;
+  late double size;
+  final random = math.Random();
+
+  double get duration => 18 + random.nextDouble() * 10; // 18–28s chậm hơn hoa
+
+  @override
+  void initState() {
+    super.initState();
+    _randomizeSun();
+
+    _controller = AnimationController(
+      duration: Duration(seconds: duration.toInt()),
+      vsync: this,
+    );
+
+    Future.delayed(Duration(milliseconds: (widget.delay * 1200).toInt()), () {
+      if (mounted) _controller.forward();
+    });
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _randomizeSun();
+        _controller.forward(from: 0);
+      }
+    });
+  }
+
+  void _randomizeSun() {
+    final width =
+        WidgetsBinding.instance.window.physicalSize.width /
+        WidgetsBinding.instance.window.devicePixelRatio;
+    xPosition = random.nextDouble() * width;
+    size = 20 + random.nextDouble() * 30; // mặt trời to hơn một chút
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final progress = Curves.linear.transform(_controller.value);
+        final top = height - (progress * (height + 120));
+        final sway = math.sin(progress * math.pi * 1.5) * 15;
+        final opacity = progress < 0.15
+            ? progress * 6
+            : (progress > 0.85 ? (1 - progress) * 6 : 1.0);
+
+        return Positioned(
+          top: top,
+          left: xPosition + sway,
+          child: Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: Transform.rotate(
+              angle: progress * 2 * math.pi, // xoay nhẹ
+              child: Image.network(
+                widget.imagePath,
+                width: size,
+                height: size,
+
+                // ignore: deprecated_member_use
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+/// 💧 Bọt biển nhỏ li ti
 class BubbleParticle extends StatefulWidget {
   final double delay;
 
@@ -219,7 +327,7 @@ class _BubbleParticleState extends State<BubbleParticle>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        final progress = _controller.value;
+        final progress = Curves.linear.transform(_controller.value);
         final top = height - (progress * (height + 50));
         final sway = math.sin(progress * math.pi * 2) * 10;
         final opacity = progress < 0.2
@@ -252,7 +360,7 @@ class _BubbleParticleState extends State<BubbleParticle>
   }
 }
 
-// 🖼️ Hiển thị hình full
+/// 🖼️ Hiển thị full hình
 class FullScreenImage extends StatelessWidget {
   final String imagePath;
   final String heroTag;

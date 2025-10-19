@@ -1,3 +1,4 @@
+import 'package:flower_bouquet_20_10/screens/home_screen.dart';
 import 'package:flower_bouquet_20_10/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
 
-      home: SplashScreen(),
+      home: HomeScreen(),
     );
   }
 }

@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context) => Custom20Dialog10(
                   message:
                       'Em chính là một món quà đặc biệt không gì có thể thay thế được. Nhân dịp 20/10, chúc em tất cả những gì tốt đẹp nhất và luôn là chính mình nhé.',
-                  textBtn: 'HiHi',
+                  textBtn: 'Hihi, dễ thương ghê',
                   onTap: () {
                     Navigator.pop(context, true);
                   },

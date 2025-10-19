@@ -11,7 +11,7 @@ class ContentScreen extends StatefulWidget {
 class _ContentScreenState extends State<ContentScreen> {
   final List<String> flowerImages = List.generate(
     30,
-    (i) => 'assets/ni/n${i + 1}.jpg', // ✅ bỏ ./ để Flutter nhận đúng asset
+    (i) => 'assets/ni/n${i + 1}.jpg',
   );
 
   @override
@@ -28,14 +28,19 @@ class _ContentScreenState extends State<ContentScreen> {
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            // 🌸 Ảnh bay ngẫu nhiên, xuất hiện xen kẽ
-            ...List.generate(30, (index) {
+            // 🌸 Hoa bay xen kẽ
+            ...List.generate(25, (index) {
               return BubbleFlower(
                 imagePath:
                     flowerImages[math.Random().nextInt(flowerImages.length)],
                 delay: index * 0.8,
                 index: index,
               );
+            }),
+
+            // 💧 Bọt biển nhỏ li ti bay ngẫu nhiên
+            ...List.generate(50, (index) {
+              return BubbleParticle(delay: index * 0.4);
             }),
           ],
         ),
@@ -44,7 +49,7 @@ class _ContentScreenState extends State<ContentScreen> {
   }
 }
 
-// 🌸 Hiệu ứng hoa bay
+// 🌸 Hoa bay
 class BubbleFlower extends StatefulWidget {
   final String imagePath;
   final double delay;
@@ -80,7 +85,6 @@ class _BubbleFlowerState extends State<BubbleFlower>
       vsync: this,
     );
 
-    // Bắt đầu bay trễ ngẫu nhiên để không đồng loạt
     Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
       if (mounted) _controller.forward();
     });
@@ -130,8 +134,6 @@ class _BubbleFlowerState extends State<BubbleFlower>
                     width: size,
                     height: size,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.favorite, color: Colors.pinkAccent),
                   ),
                 ),
               ),
@@ -161,6 +163,95 @@ class _BubbleFlowerState extends State<BubbleFlower>
   }
 }
 
+// 💧 Bọt biển nhỏ li ti
+class BubbleParticle extends StatefulWidget {
+  final double delay;
+
+  const BubbleParticle({super.key, required this.delay});
+
+  @override
+  State<BubbleParticle> createState() => _BubbleParticleState();
+}
+
+class _BubbleParticleState extends State<BubbleParticle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late double xPosition;
+  late double size;
+  final random = math.Random();
+
+  double get duration => 6 + random.nextDouble() * 4; // 6–10s
+
+  @override
+  void initState() {
+    super.initState();
+    _randomizeParticle();
+
+    _controller = AnimationController(
+      duration: Duration(seconds: duration.toInt()),
+      vsync: this,
+    );
+
+    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
+      if (mounted) _controller.forward();
+    });
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _randomizeParticle();
+        _controller.forward(from: 0);
+      }
+    });
+  }
+
+  void _randomizeParticle() {
+    final width =
+        WidgetsBinding.instance.window.physicalSize.width /
+        WidgetsBinding.instance.window.devicePixelRatio;
+    xPosition = random.nextDouble() * width;
+    size = 2 + random.nextDouble() * 3; // nhỏ li ti
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final progress = _controller.value;
+        final top = height - (progress * (height + 50));
+        final sway = math.sin(progress * math.pi * 2) * 10;
+        final opacity = progress < 0.2
+            ? progress * 5
+            : (progress > 0.9 ? (1 - progress) * 10 : 1.0);
+
+        return Positioned(
+          top: top,
+          left: xPosition + sway,
+          child: Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
 // 🖼️ Hiển thị hình full
 class FullScreenImage extends StatelessWidget {
   final String imagePath;
@@ -175,7 +266,7 @@ class FullScreenImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.9),
+      backgroundColor: Colors.black.withOpacity(0.5),
       body: Stack(
         children: [
           Center(

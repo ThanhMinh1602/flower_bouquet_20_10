@@ -153,12 +153,15 @@ class _Custom20Dialog10State extends State<Custom20Dialog10>
                                 size: 20,
                               ),
                               SizedBox(width: 8),
-                              Text(
-                                widget.textBtn,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                              Expanded(
+                                child: Text(
+                                  widget.textBtn,
+                                  textScaler: TextScaler.linear(0.9),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                             ],

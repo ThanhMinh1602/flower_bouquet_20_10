@@ -122,7 +122,7 @@ class _BubbleFlowerState extends State<BubbleFlower>
   late double size;
   final random = math.Random();
 
-  double get duration => 12 + random.nextDouble() * 8; // 12–20s
+  double get duration => 20 + random.nextDouble() * 8; // 12–20s
 
   @override
   void initState() {
@@ -313,8 +313,9 @@ class _BubbleSunState extends State<BubbleSun>
 /// 💧 Bọt biển nhỏ li ti
 class BubbleParticle extends StatefulWidget {
   final double delay;
+  final Color? color;
 
-  const BubbleParticle({super.key, required this.delay});
+  const BubbleParticle({super.key, required this.delay, this.color});
 
   @override
   State<BubbleParticle> createState() => _BubbleParticleState();
@@ -382,7 +383,7 @@ class _BubbleParticleState extends State<BubbleParticle>
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
+                color: widget.color ?? Colors.white.withOpacity(0.8),
                 shape: BoxShape.circle,
               ),
             ),
